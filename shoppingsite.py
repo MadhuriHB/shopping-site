@@ -7,7 +7,7 @@ Authors: Joel Burton, Christian Fernandez, Meggie Mahnken.
 """
 
 
-from flask import Flask, render_template, redirect, flash
+from flask import Flask, render_template, redirect, flash, session
 import jinja2
 
 import melons
@@ -49,7 +49,6 @@ def show_melon(melon_id):
 
     Show all info about a melon. Also, provide a button to buy that melon.
     """
-
     melon = melons.get_by_id(melon_id)
     print melon
     return render_template("melon_details.html",
@@ -59,7 +58,31 @@ def show_melon(melon_id):
 @app.route("/cart")
 def shopping_cart():
     """Display content of shopping cart."""
+    
+    dict_quantity = {}
+    dict_price = {}
+    melon_ids = session["cart"]
+    total_amount = 0
+    melon = None
+    for melon_id1 in melon_ids:
+        quantity = 1
+        for melon_id2 in melon_ids[1:]:
 
+            if melon_id1 == melon_id2:
+                quantity += 1 
+    if melon_id1 not in dict:
+        dict_quantity[melon_id1] = quantity            
+    
+    for melon_id, quant in dict.items():
+        melon = melon.get_by_id(melon_id)
+        price = melon.price
+        total_price = quant * price
+        if melon_id not in dict_price:
+            dict_price[melon_id] = total_price
+
+    for price in dict_price.values():
+        total_amount += price        
+            
     # TODO: Display the contents of the shopping cart.
 
     # The logic here will be something like:
@@ -71,7 +94,7 @@ def shopping_cart():
     #   - keep track of the total amt of the entire order
     # - hand to the template the total order cost and the list of melon types
 
-    return render_template("cart.html")
+    return render_template("cart.html", )
 
 
 @app.route("/add_to_cart/<int:id>")
@@ -81,14 +104,14 @@ def add_to_cart(id):
     When a melon is added to the cart, redirect browser to the shopping cart
     page and display a confirmation message: 'Successfully added to cart'.
     """
+    if "cart" not in session:
+        session["cart"] = [id]
+    else: 
+        session["cart"].append(id)
+    
+    flash("Successfully added to cart")
 
-    # TODO: Finish shopping cart functionality
-
-    # The logic here should be something like:
-    #
-    # - add the id of the melon they bought to the cart in the session
-
-    return "Oops! This needs to be implemented!"
+    return render_template("cart.html")
 
 
 @app.route("/login", methods=["GET"])
